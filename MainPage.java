@@ -90,11 +90,13 @@ public class MainPage extends javax.swing.JFrame {
     private void maintainBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maintainBtnActionPerformed
         MaintainEmail me = new MaintainEmail();
         me.setVisible(true);
+        this.setVisible(false);
     }//GEN-LAST:event_maintainBtnActionPerformed
 
     private void importBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importBtnActionPerformed
         Import i = new Import();
         i.setVisible(true);
+        this.setVisible(false);
     }//GEN-LAST:event_importBtnActionPerformed
 
     /**

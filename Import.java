@@ -4,16 +4,24 @@
  */
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Import extends javax.swing.JFrame {
-    
+    ArrayList<BIS> bisList;
     /**
      * Creates new form Frame1
      */
     public Import() {
         initComponents();
-        
+        bisList = new ArrayList<>();
     }
 
     /**
@@ -84,22 +92,120 @@ public class Import extends javax.swing.JFrame {
 
     private void BrowseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseBtnActionPerformed
         final JFileChooser fc = new JFileChooser();
+        /**
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("xlsx");
+        fc.setFileFilter(filter);
+        */
         File file = null;
         System.out.println("");
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
-            fileNameTF.setText(file.getName());
+            fileNameTF.setText(file.getAbsolutePath());
         }
         
     }//GEN-LAST:event_BrowseBtnActionPerformed
 
     private void importBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importBtnActionPerformed
-        displayInfo di = new displayInfo();
+        try {
+            readFile(fileNameTF.getText());
+        } catch (IOException ex) {
+            Logger.getLogger(Import.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        displayInfo di = new displayInfo(bisList);
         di.setVisible(true);
+        this.setVisible(false);
     }//GEN-LAST:event_importBtnActionPerformed
 
+    private void readFile(String fileName) throws FileNotFoundException, IOException {
+        FileInputStream fis = new FileInputStream(new File(fileName));
+        
+        //create workbook instance that refers to .xls file
+        XSSFWorkbook wb = new XSSFWorkbook(fis);
+        
+        
+        //create a sheet object to retrive the sheet
+        XSSFSheet sheet = wb.getSheetAt(0);
+        
+        
+        //loop through the rows in the sheet
+        for (Row row: sheet) {
+            String idScope = null, acceptancePlan = null, category = null;
+            String stepName = null, subcontractor = null;
+            String onADate = null, bisDate = null, stepStatus = null;
+            String stepInitiated = null, stepSubmitted = null;
+            String rejected = null, resubmitted = null, stepAccepted = null;
+            
+            //loop through the cells in the row
+            for (int cn=0; cn<=13; cn++) {
+                Cell cell = row.getCell(cn);
+                
+                //set default cell value if no value is found 
+                if (cell == null) {
+                    cell = row.createCell(cn);
+                    cell.setCellValue("null");
+                }
+                
+                if (cn==0) {
+                    idScope = cell.toString();
+                }
+                else if (cn==1) {
+                    acceptancePlan = cell.toString();
+                }
+                else if (cn==2) {
+                    category = cell.toString();
+                }
+                else if (cn==3) {
+                    stepName = cell.toString();
+                }
+                else if (cn==4) {
+                    subcontractor = cell.toString();
+                }
+                else if (cn==5) {
+                    onADate = cell.toString();
+                }
+                else if (cn==7) {
+                    bisDate = cell.toString();
+                }
+                else if (cn==8) {
+                    stepStatus = cell.toString();
+                }
+                else if (cn==9) {
+                    stepInitiated = cell.toString();
+                }
+                else if (cn==10) {
+                    stepSubmitted = cell.toString();
+                }
+                else if (cn==11) {
+                    rejected = cell.toString();
+                }
+                else if (cn==12) {
+                    resubmitted = cell.toString();
+                }
+                else {
+                    stepAccepted = cell.toString();
+                }   
+            }
+            
+            BIS bis = new BIS(idScope, acceptancePlan, category, stepName, subcontractor,
+            onADate, bisDate, stepStatus, stepInitiated, stepSubmitted,
+            rejected, resubmitted, stepAccepted);
+            
+            bisList.add(bis);
 
+        }
+        
+        //remove the first row with column name
+        bisList.remove(0);
+        
+        for (BIS bis: bisList) {
+            System.out.println(bis);
+        }
+        
+        wb.close();
+        fis.close();
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BrowseBtn;
     private javax.swing.JLabel fileNameLbl;
