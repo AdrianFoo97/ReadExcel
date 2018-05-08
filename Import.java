@@ -15,13 +15,15 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Import extends javax.swing.JFrame {
-    ArrayList<BIS> bisList;
+    protected ArrayList<BIS> bisList;
+    protected ArrayList<Subcontractor> conList;
     /**
      * Creates new form Frame1
      */
-    public Import() {
+    public Import(ArrayList<Subcontractor> conList) {
         initComponents();
         bisList = new ArrayList<>();
+        this.conList = conList;
     }
 
     /**
@@ -47,7 +49,7 @@ public class Import extends javax.swing.JFrame {
             }
         });
 
-        fileNameLbl.setText("FileName:");
+        fileNameLbl.setText("FilePath:");
 
         importBtn.setText("Import");
         importBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -72,7 +74,7 @@ public class Import extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(193, 193, 193)
                         .addComponent(importBtn)))
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(76, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,7 +114,7 @@ public class Import extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(Import.class.getName()).log(Level.SEVERE, null, ex);
         }
-        displayInfo di = new displayInfo(bisList);
+        displayInfo di = new displayInfo(bisList, conList);
         di.setVisible(true);
         this.setVisible(false);
     }//GEN-LAST:event_importBtnActionPerformed
@@ -164,25 +166,25 @@ public class Import extends javax.swing.JFrame {
                 else if (cn==5) {
                     onADate = cell.toString();
                 }
-                else if (cn==7) {
+                else if (cn==6) {
                     bisDate = cell.toString();
                 }
-                else if (cn==8) {
+                else if (cn==7) {
                     stepStatus = cell.toString();
                 }
-                else if (cn==9) {
+                else if (cn==8) {
                     stepInitiated = cell.toString();
                 }
-                else if (cn==10) {
+                else if (cn==9) {
                     stepSubmitted = cell.toString();
                 }
-                else if (cn==11) {
+                else if (cn==10) {
                     rejected = cell.toString();
                 }
-                else if (cn==12) {
+                else if (cn==11) {
                     resubmitted = cell.toString();
                 }
-                else {
+                else if (cn==12) {
                     stepAccepted = cell.toString();
                 }   
             }
@@ -190,7 +192,6 @@ public class Import extends javax.swing.JFrame {
             BIS bis = new BIS(idScope, acceptancePlan, category, stepName, subcontractor,
             onADate, bisDate, stepStatus, stepInitiated, stepSubmitted,
             rejected, resubmitted, stepAccepted);
-            
             bisList.add(bis);
 
         }

@@ -38,7 +38,7 @@
                       <Component id="importBtn" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="66" max="32767" attributes="0"/>
+              <EmptySpace pref="76" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -69,7 +69,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="fileNameLbl">
       <Properties>
-        <Property name="text" type="java.lang.String" value="FileName:"/>
+        <Property name="text" type="java.lang.String" value="FilePath:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="fileNameTF">

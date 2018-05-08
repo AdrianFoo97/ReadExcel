@@ -1,3 +1,6 @@
+
+import java.util.ArrayList;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -9,12 +12,13 @@
  * @author a80052136
  */
 public class MainPage extends javax.swing.JFrame {
-
+    protected ArrayList<Subcontractor> conList;
     /**
      * Creates new form MainPage
      */
     public MainPage() {
         initComponents();
+        conList = new ArrayList<>();
     }
 
     /**
@@ -88,13 +92,13 @@ public class MainPage extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void maintainBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maintainBtnActionPerformed
-        MaintainEmail me = new MaintainEmail();
+        MaintainEmail me = new MaintainEmail(conList);
         me.setVisible(true);
-        this.setVisible(false);
+        //this.setVisible(false);
     }//GEN-LAST:event_maintainBtnActionPerformed
 
     private void importBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importBtnActionPerformed
-        Import i = new Import();
+        Import i = new Import(conList);
         i.setVisible(true);
         this.setVisible(false);
     }//GEN-LAST:event_importBtnActionPerformed
