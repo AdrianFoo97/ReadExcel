@@ -1,5 +1,9 @@
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.util.ArrayList;
+import javax.swing.JFrame;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -12,15 +16,22 @@ import java.util.ArrayList;
  * @author a80052136
  */
 public class MainPage extends javax.swing.JFrame {
-    protected ArrayList<Subcontractor> conList;
     /**
      * Creates new form MainPage
      */
     public MainPage() {
         initComponents();
-        conList = new ArrayList<>();
+        centreWindow(this);
+        setResizable(false);
     }
 
+    // This function will centre the window
+    private void centreWindow(Window frame) {
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -92,13 +103,13 @@ public class MainPage extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void maintainBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maintainBtnActionPerformed
-        MaintainEmail me = new MaintainEmail(conList);
+        MaintainEmail me = new MaintainEmail();
         me.setVisible(true);
-        //this.setVisible(false);
+        this.setVisible(false);
     }//GEN-LAST:event_maintainBtnActionPerformed
 
     private void importBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importBtnActionPerformed
-        Import i = new Import(conList);
+        Import i = new Import();
         i.setVisible(true);
         this.setVisible(false);
     }//GEN-LAST:event_importBtnActionPerformed

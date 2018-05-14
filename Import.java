@@ -3,6 +3,9 @@
  * @author a80052136
  */
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -15,15 +18,36 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Import extends javax.swing.JFrame {
-    protected ArrayList<BIS> bisList;
-    protected ArrayList<Subcontractor> conList;
+    private ArrayList<BIS> bisList;
     /**
      * Creates new form Frame1
      */
-    public Import(ArrayList<Subcontractor> conList) {
+    public Import() {
         initComponents();
         bisList = new ArrayList<>();
-        this.conList = conList;
+        centreWindow(this);
+        setResizable(false);
+    }
+    
+    // This function will centre the window
+    private void centreWindow(Window frame) {
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+    }
+    private void openFileChooser () {
+        final JFileChooser fc = new JFileChooser();
+        /**
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("xlsx");
+        fc.setFileFilter(filter);
+        */
+        File file = null;
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+            filePathTF.setText(file.getAbsolutePath());
+        }
     }
 
     /**
@@ -37,8 +61,9 @@ public class Import extends javax.swing.JFrame {
 
         BrowseBtn = new javax.swing.JButton();
         fileNameLbl = new javax.swing.JLabel();
-        fileNameTF = new javax.swing.JTextField();
+        filePathTF = new javax.swing.JTextField();
         importBtn = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -49,7 +74,14 @@ public class Import extends javax.swing.JFrame {
             }
         });
 
-        fileNameLbl.setText("FilePath:");
+        fileNameLbl.setText("Import File: ");
+
+        filePathTF.setEditable(false);
+        filePathTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filePathTFActionPerformed(evt);
+            }
+        });
 
         importBtn.setText("Import");
         importBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -58,66 +90,83 @@ public class Import extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("Cancel");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(63, 63, 63)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fileNameLbl)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(64, 64, 64)
-                        .addComponent(fileNameLbl)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(importBtn)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton1)
+                                .addGap(36, 36, 36))
+                            .addComponent(filePathTF, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(fileNameTF, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BrowseBtn))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(193, 193, 193)
-                        .addComponent(importBtn)))
-                .addContainerGap(76, Short.MAX_VALUE))
+                        .addComponent(BrowseBtn)))
+                .addContainerGap(48, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(55, 55, 55)
+                .addGap(43, 43, 43)
+                .addComponent(fileNameLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(fileNameLbl)
-                    .addComponent(fileNameTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(filePathTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(BrowseBtn))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
-                .addComponent(importBtn)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(importBtn)
+                    .addComponent(jButton1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void BrowseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseBtnActionPerformed
-        final JFileChooser fc = new JFileChooser();
-        /**
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("xlsx");
-        fc.setFileFilter(filter);
-        */
-        File file = null;
-        System.out.println("");
-        int returnVal = fc.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            file = fc.getSelectedFile();
-            fileNameTF.setText(file.getAbsolutePath());
-        }
-        
+        openFileChooser();
     }//GEN-LAST:event_BrowseBtnActionPerformed
 
     private void importBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importBtnActionPerformed
         try {
-            readFile(fileNameTF.getText());
+            readFile(filePathTF.getText());
+            displayInfo di = new displayInfo(bisList);
+            di.setVisible(true);
+            this.setVisible(false);
         } catch (IOException ex) {
-            Logger.getLogger(Import.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Please choose an excel file"
+                    + "(.xlxs) to import.",
+                            "Message", JOptionPane.INFORMATION_MESSAGE);
+        } catch (org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException e) {
+            JOptionPane.showMessageDialog(this, "Please choose an excel file"
+                    + "(.xlxs) to import.",
+                            "Message", JOptionPane.INFORMATION_MESSAGE);
         }
-        displayInfo di = new displayInfo(bisList, conList);
-        di.setVisible(true);
-        this.setVisible(false);
+        
     }//GEN-LAST:event_importBtnActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        this.dispose();
+        MainPage mp = new MainPage();
+        mp.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void filePathTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filePathTFActionPerformed
+        openFileChooser();
+    }//GEN-LAST:event_filePathTFActionPerformed
 
     private void readFile(String fileName) throws FileNotFoundException, IOException {
         FileInputStream fis = new FileInputStream(new File(fileName));
@@ -198,11 +247,6 @@ public class Import extends javax.swing.JFrame {
         
         //remove the first row with column name
         bisList.remove(0);
-        
-        for (BIS bis: bisList) {
-            System.out.println(bis);
-        }
-        
         wb.close();
         fis.close();
     }
@@ -210,7 +254,8 @@ public class Import extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BrowseBtn;
     private javax.swing.JLabel fileNameLbl;
-    private javax.swing.JTextField fileNameTF;
+    private javax.swing.JTextField filePathTF;
     private javax.swing.JButton importBtn;
+    private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
 }

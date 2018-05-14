@@ -61,7 +61,7 @@ public class detailsTableModel extends AbstractTableModel{
         }
     }
     
-    public String getColunName(int column) {
+    public String getColumnName(int column) {
         return colHeader[column];
     }
     

@@ -1,8 +1,16 @@
 
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-
+import javax.swing.JFrame;
+import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -14,18 +22,29 @@ import javax.swing.JComboBox;
  * @author a80052136
  */
 public class sendEmail extends javax.swing.JFrame {
-    protected ArrayList<String> emailList;
+    private ArrayList<String> summaryList;
+    private SubcontractorDA da;
     /**
      * Creates new form sendEmail
      */
-    public sendEmail(ArrayList<Subcontractor> conList) {
+    public sendEmail(ArrayList<Subcontractor> conList, String subcon, 
+            ArrayList<String> summaryList) {
         initComponents();
-        //Array List have some problem
-        //emailList = new ArrayList<>();
-        for (Subcontractor s: conList) {
-            emailList.add(s.getEmail());
+        receiverLbl.setText(subcon);
+        da = new SubcontractorDA();
+        centreWindow(this);
+        conList = da.getAllSubcontractor();
+        if (conList.isEmpty() ) {
+            receiverCombo.addItem("");
+            receiverCombo.setEnabled(false);
         }
-        //receiverCombo = new JComboBox((ComboBoxModel) emailList);
+        
+        for (Subcontractor s: conList) {
+            receiverCombo.addItem(s.getEmail());
+        }
+        this.summaryList = summaryList;
+        subjectTF.setText("BIS Report Submission Status");
+        setResizable(false);
     }
 
     /**
@@ -38,26 +57,26 @@ public class sendEmail extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        messageTA = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         receiverCombo = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        subjectTF = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        receiverLbl = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        sendBtn = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        messageTA.setColumns(20);
+        messageTA.setRows(5);
+        jScrollPane1.setViewportView(messageTA);
 
         jLabel2.setText("Receiver: ");
 
-        receiverCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         receiverCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 receiverComboActionPerformed(evt);
@@ -66,11 +85,11 @@ public class sendEmail extends javax.swing.JFrame {
 
         jLabel4.setText("Subject: ");
 
-        jTextField1.setText("jTextField1");
+        subjectTF.setText("jTextField1");
 
         jLabel1.setText("Email: ");
 
-        jLabel3.setText("example@huawei.com");
+        receiverLbl.setText("contractor name");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -82,39 +101,50 @@ public class sendEmail extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(receiverCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(119, 119, 119))
+                        .addComponent(receiverLbl))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel4)
                             .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3))
-                        .addContainerGap(33, Short.MAX_VALUE))))
+                            .addComponent(subjectTF, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(receiverCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(receiverCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel2)
+                    .addComponent(receiverLbl))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(subjectTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
-                    .addComponent(jLabel3))
-                .addContainerGap(24, Short.MAX_VALUE))
+                    .addComponent(receiverCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         jLabel5.setText("Message: ");
 
-        jButton1.setText("Send");
+        sendBtn.setText("Send");
+        sendBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendBtnActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("Cancel");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -131,7 +161,9 @@ public class sendEmail extends javax.swing.JFrame {
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 313, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(178, 178, 178)
+                        .addGap(133, 133, 133)
+                        .addComponent(sendBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1)))
                 .addContainerGap(61, Short.MAX_VALUE))
         );
@@ -145,29 +177,113 @@ public class sendEmail extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 296, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26)
-                .addComponent(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sendBtn)
+                    .addComponent(jButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    // This function will centre the window
+    private void centreWindow(Window frame) {
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+    }
+    
     private void receiverComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_receiverComboActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_receiverComboActionPerformed
+    
+    private String getSummaryStr() {
+        int i = 0, j = 0, smallest = 0;
+        String summary = "";
+        String[] category = {"1-FOP", "2-OPTI", "3-BSTR", "4-FM", 
+            "5-PREFIX"};
+        for (j = 0; j <= 4; j++) {
+            for (i = smallest; i <= smallest + 1; i++) {
+                if (i%2 == 0) {
+                    summary += category[j] + "%09%09Pending%09" + summaryList.get(i);
+                }
+                else {
+                    summary += "%09submission%09" + summaryList.get(i) + "%09Resubmission%0A";
+                }
+            }
+            smallest += 2;
+        }
+        return summary;
+    }
+    
+    private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
+        Desktop desktop;
+        if (Desktop.isDesktopSupported() 
+            && (desktop = Desktop.getDesktop()).isSupported(Desktop.Action.MAIL)) {
+            URI mailto = null;
+            String email = (String) receiverCombo.getSelectedItem();
+            String subject = subjectTF.getText();
+            String summary = getSummaryStr();
+            String message = "";
+            if (messageTA.getText().equalsIgnoreCase("")) {
+                message = "Below are the latest BIS Report submission "
+                    + "status:\n\n";
+            }
+            else {
+                message = messageTA.getText() + "\n\n";
+            }
+      
+            String body = ""
+                    + message + summary + "\n\n"
+                    + "Attached can find the details acceptance plan information."
+                    + "\n\nThank you.";
+            body = body.replaceAll(" ", "%20");
+            body = body.replaceAll("\n", "%0A");
+            body = body.replaceAll("\t", "%09");
+            body = body.replaceAll(":", "%3A");
+            body = body.replaceAll("\\.", "%2E");
+            body = body.replaceAll(",", "%2C");
+            subject = subject.replaceAll(" ", "%20");
+            subject = subject.replaceAll("\n", "%0A");
+            subject = subject.replaceAll("\t", "%09");
+            subject = subject.replaceAll(":", "%3A");
+            subject = subject.replaceAll("\\.", "%2E");
+            subject = subject.replaceAll(",", "%2C");
+            try {
+                mailto = new URI("mailto:" + email + "?subject=" + subject + 
+                        "&body=" + body);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(sendEmail.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                desktop.mail(mailto);
+            } catch (IOException ex) {
+                Logger.getLogger(sendEmail.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+          // TODO fallback to some Runtime.exec(..) voodoo?
+          throw new RuntimeException("desktop doesn't support mailto; mail is dead anyway ;)");
+        }
+    }//GEN-LAST:event_sendBtnActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextArea messageTA;
     private javax.swing.JComboBox<String> receiverCombo;
+    private javax.swing.JLabel receiverLbl;
+    private javax.swing.JButton sendBtn;
+    private javax.swing.JTextField subjectTF;
     // End of variables declaration//GEN-END:variables
 }
