@@ -5,6 +5,7 @@ import java.awt.Window;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -42,6 +43,7 @@ public class MaintainEmail extends javax.swing.JFrame {
         conList = da.getAllSubcontractor();
         etm = new emailTableModel(conList);
         subconTable.setModel(etm);
+        subconTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
     /**
      * This method is called from within the constructor to initialize the form.

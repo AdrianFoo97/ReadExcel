@@ -9,8 +9,22 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import java.net.*;
+import java.util.Date;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -24,6 +38,7 @@ import java.util.logging.Logger;
 public class sendEmail extends javax.swing.JFrame {
     private ArrayList<String> summaryList;
     private SubcontractorDA da;
+    private String subcon;
     /**
      * Creates new form sendEmail
      */
@@ -31,6 +46,7 @@ public class sendEmail extends javax.swing.JFrame {
             ArrayList<String> summaryList) {
         initComponents();
         receiverLbl.setText(subcon);
+        this.subcon = subcon;
         da = new SubcontractorDA();
         centreWindow(this);
         conList = da.getAllSubcontractor();
@@ -206,10 +222,10 @@ public class sendEmail extends javax.swing.JFrame {
         for (j = 0; j <= 4; j++) {
             for (i = smallest; i <= smallest + 1; i++) {
                 if (i%2 == 0) {
-                    summary += category[j] + "%09%09Pending%09" + summaryList.get(i);
+                    summary += category[j] + " \t\tPending\t" + summaryList.get(i);
                 }
                 else {
-                    summary += "%09submission%09" + summaryList.get(i) + "%09Resubmission%0A";
+                    summary += "\tsubmission\t" + summaryList.get(i) + "\tResubmission\n";
                 }
             }
             smallest += 2;
@@ -218,6 +234,82 @@ public class sendEmail extends javax.swing.JFrame {
     }
     
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
+        try{
+            String host ="smtpscn.huawei.com" ;
+            String user = "a80052136";
+            String pass = "HelpB1600693!";
+            // Recipient's email ID
+            String to = "adrianf.wei@huawei.com";
+            // Sender's email ID
+            String from = "adrianf.wei@huawei.com";
+            String subject = subjectTF.getText();
+            String messageText = getSummaryStr();
+            boolean sessionDebug = false;
+
+            Properties props = System.getProperties(); // to set different type of properties
+
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", "587");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.trust", "smtpscn.huawei.com");
+
+            java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+            Session mailSession = Session.getDefaultInstance(props, null);
+            mailSession.setDebug(sessionDebug);
+            
+            // Create a default MimeMessage oject
+            Message msg = new MimeMessage(mailSession);
+            
+            // Set From: heder field of the header
+            msg.setFrom(new InternetAddress(from));
+            
+            // Set To: header filed of the header
+            InternetAddress[] address = {new InternetAddress(to)}; // address of sender
+            msg.setRecipients(Message.RecipientType.TO, address); // receiver email
+            
+            // Set Subject: header field
+            msg.setSubject(subject); 
+            msg.setSentDate(new Date()); // message send date
+            
+            // Create the message part
+            BodyPart msgBodyPart = new MimeBodyPart();
+            
+            // Now set the actual message
+            msgBodyPart.setText(messageText);
+            
+            // Create a multipar message
+            Multipart multipart = new MimeMultipart();
+            
+            // Set text message part
+            multipart.addBodyPart(msgBodyPart);
+            
+            // Part two is attachment
+            msgBodyPart = new MimeBodyPart();
+            String filename = "C:\\Users\\a80052136\\Documents\\NetBeansProjects\\sendMessage\\" + 
+                    subcon + ".xlsx";
+            DataSource source = new FileDataSource(filename);
+            msgBodyPart.setDataHandler(new DataHandler(source));
+            msgBodyPart.setFileName(source.getName());
+            //msgBodyPart.setFileName(filename);
+            multipart.addBodyPart(msgBodyPart);
+
+            // Send the complete message parts
+            msg.setContent(multipart);
+                       
+            //msg.setText(messageText); // actual message
+
+           Transport transport=mailSession.getTransport("smtp"); //server through which we are going to send msg
+           transport.connect(host, user, pass); // we need because we have to authenticate sender email and password
+           transport.sendMessage(msg, msg.getAllRecipients());
+           transport.close();
+           System.out.println("message send successfully");
+        }catch(Exception ex)
+        {
+            System.out.println(ex); // if any error occur then error message will print
+        }
+        /**
         Desktop desktop;
         if (Desktop.isDesktopSupported() 
             && (desktop = Desktop.getDesktop()).isSupported(Desktop.Action.MAIL)) {
@@ -265,6 +357,7 @@ public class sendEmail extends javax.swing.JFrame {
           // TODO fallback to some Runtime.exec(..) voodoo?
           throw new RuntimeException("desktop doesn't support mailto; mail is dead anyway ;)");
         }
+        */
     }//GEN-LAST:event_sendBtnActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
