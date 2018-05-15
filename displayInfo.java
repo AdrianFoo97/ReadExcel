@@ -19,40 +19,63 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author a80052136
  */
 public class displayInfo extends javax.swing.JFrame {
+    // Full list of the bis report
     private ArrayList<BIS> bisList = new ArrayList<>();
+    // Full list of the pending bis report
     private ArrayList<BIS> filteredBisList = new ArrayList<>();
     private DefaultListModel listModel;
+    // Full list of pending subcontractor without duplicate data
     private LinkedHashSet<String> filtered;
+    // Full list of pending bis report of a subcontracor
     private ArrayList<BIS> passList = new ArrayList<>();
     private detailsTableModel dtm;
-    private ArrayList<Subcontractor> conList;
-    private ArrayList<String> summaryList;
     /**
      * Creates new form displayInfo
      */
     public displayInfo(ArrayList<BIS> bisList) {
         initComponents();
         this.bisList = bisList;
-        this.conList = conList;
+        setResizable(false);
         
         setupTableModel();
         getPenSubcon();
         setupListModel();
         centreWindow(this);
+        setupSummaryTable(passList);
+    }
+    // Setting the summary table 
+    private void setupSummaryTable(ArrayList<BIS> passList) {
+        String column[] = {"", "1-FOP", "2-OPTI", "3-BSTR", "4-FM", "5-Prefix"};
+        String data[][] = getSummaryTable(passList);
+        DefaultTableModel model = new DefaultTableModel(data, column);
+        summaryTable.setModel(model);
+        summaryTable.setRowHeight(90);
+        summaryTable.setFillsViewportHeight(true);
+        summaryTable.setRowSelectionAllowed(false);
+        summaryTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+        summaryTable.getTableHeader().setResizingAllowed(false);
     }
     
     // This function will centre the window
@@ -64,13 +87,13 @@ public class displayInfo extends javax.swing.JFrame {
     }
     
     // setting the table model
-    public void setupTableModel() {
+    private void setupTableModel() {
         dtm = new detailsTableModel(passList);
         detailsTable.setModel(dtm);
     }
     
     // adding the pending subcontractor to the list model
-    public void setupListModel () {
+    private void setupListModel () {
         listModel = new DefaultListModel();
         pendingList.setModel(listModel);
         pendingList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -92,15 +115,16 @@ public class displayInfo extends javax.swing.JFrame {
                         }
                     }
                     setupTableModel();
-                    setSummaryLbl();
+                    setupSummaryTable(passList);
                 }
             }
             
         });
     }
 
-    // filter the arraylist to get the pending subcontractor
-    public void getPenSubcon() {
+    
+    // filter the arraylist to get the pending subcontractor and bis object
+    private void getPenSubcon() {
         filtered = new LinkedHashSet();
         filteredBisList = new ArrayList<>();
         for (BIS bis: bisList) {
@@ -117,47 +141,62 @@ public class displayInfo extends javax.swing.JFrame {
         }
     }
     
-    public void setSummaryLbl() {
-        String forSub = Integer.toString(countPenSub("1-FOP"));
-        String optiSub = Integer.toString(countPenSub("2-OPTI"));
-        String bstrSub = Integer.toString(countPenSub("3-BSTR"));
-        String fmSub = Integer.toString(countPenSub("4-FM"));
-        String prefixSub = Integer.toString(countPenSub("5-PREFIX"));
+    /**
+     * Get all the summary for all the bis
+     * @return the summary for all bis status
+     */
+    private String[][] getSummaryTable(ArrayList<BIS> passList) {
+        String fopSub = Integer.toString(countPenSub("1-FOP", passList));
+        String optiSub = Integer.toString(countPenSub("2-OPTI", passList));
+        String bstrSub = Integer.toString(countPenSub("3-BSTR", passList));
+        String fmSub = Integer.toString(countPenSub("4-FM", passList));
+        String prefixSub = Integer.toString(countPenSub("5-PREFIX", passList));
+
+        String fopResub = Integer.toString(countPenResub("1-FOP", passList));
+        String optiResub = Integer.toString(countPenResub("2-OPTI", passList));
+        String bstrResub = Integer.toString(countPenResub("3-BSTR", passList));
+        String fmResub = Integer.toString(countPenResub("4-FM", passList));
+        String prefixResub = Integer.toString(countPenResub("5-PREFIX", passList));
         
-        fopSubLbl.setText(forSub);
-        optiSubLbl.setText(optiSub);
-        bstrSubLbl.setText(bstrSub);
-        fmSubLbl.setText(fmSub);
-        prefixSubLbl.setText(prefixSub);
-        
-        String fopResub = Integer.toString(countPenResub("1-FOP"));
-        String optiResub = Integer.toString(countPenResub("2-OPTI"));
-        String bstrResub = Integer.toString(countPenResub("3-BSTR"));
-        String fmResub = Integer.toString(countPenResub("4-FM"));
-        String prefixResub = Integer.toString(countPenResub("5-PREFIX"));
-        
-        fopResubLbl.setText(fopResub);
-        optiResubLbl.setText(optiResub);
-        bstrResubLbl.setText(bstrResub);
-        fmResubLbl.setText(fmResub);
-        prefixResubLbl.setText(prefixResub);
-        
-        summaryList = new ArrayList<>();
-        summaryList.add(forSub);
-        summaryList.add(fopResub);
-        summaryList.add(optiSub);
-        summaryList.add(optiResub);
-        summaryList.add(bstrSub);
-        summaryList.add(bstrResub);
-        summaryList.add(fmSub);
-        summaryList.add(fmResub);
-        summaryList.add(prefixSub);
-        summaryList.add(prefixResub);
-         
+        String data [][] = {
+            {"Pending Submission", fopSub, optiSub, bstrSub, fmSub, prefixSub},
+            {"Pending Resubmission", fopResub, optiResub, bstrResub, fmResub, prefixResub}
+        };
+        return data;
     }
     
+    private String getSummaryStr(ArrayList<BIS> passList) {
+        String fopSub = Integer.toString(countPenSub("1-FOP", passList));
+        String optiSub = Integer.toString(countPenSub("2-OPTI", passList));
+        String bstrSub = Integer.toString(countPenSub("3-BSTR", passList));
+        String fmSub = Integer.toString(countPenSub("4-FM", passList));
+        String prefixSub = Integer.toString(countPenSub("5-PREFIX", passList));
 
-    public int countPenSub(String category) {
+        String fopResub = Integer.toString(countPenResub("1-FOP", passList));
+        String optiResub = Integer.toString(countPenResub("2-OPTI", passList));
+        String bstrResub = Integer.toString(countPenResub("3-BSTR", passList));
+        String fmResub = Integer.toString(countPenResub("4-FM", passList));
+        String prefixResub = Integer.toString(countPenResub("5-PREFIX", passList));
+        
+        String strReturn = "Below are the latest BIS Report submission status:\n\n"
+                + "1-FOP\t\tPending\t\t" + fopSub + "\t\tSubmission\t\t" + 
+                fopResub + "\t\tResubmission\n" +
+                "2-OPTI\t\tPending\t\t" + optiSub + "\t\tSubmission\t\t" + 
+                optiResub + "\t\tResubmission\n" +
+                "3-BSTR\t\tPending\t\t" + bstrSub + "\t\tSubmission\t\t" + 
+                bstrResub + "\t\tResubmission\n" +
+                "4-FM\t\tPending\t\t" + fmSub + "\t\tSubmission\t\t" + 
+                fmResub + "\t\tResubmission\n" +
+                "5-PREFIX\t\tPending\t\t" + prefixSub + "\t\tSubmission\t\t" + 
+                prefixResub + "\t\tResubmission\n\n" +
+                "Attachment can find the details acceptance plan information.\n\n" + 
+                "Thank you.";
+        
+        return strReturn;
+    }
+    
+    // Count the total pending submission for a category
+    private int countPenSub(String category, ArrayList<BIS> passList) {
         int total = 0;
         for (BIS bis: passList) {
             if (bis.stepSubmitted.equalsIgnoreCase("null") &&
@@ -168,7 +207,8 @@ public class displayInfo extends javax.swing.JFrame {
         return total;
     }
     
-    public int countPenResub(String category) {
+    // Count the total pending resubmission for a category
+    private int countPenResub(String category, ArrayList<BIS> passList) {
         int total = 0;
         for (BIS bis: passList) {
             if (!bis.getRejected().equalsIgnoreCase("null") &&
@@ -180,7 +220,8 @@ public class displayInfo extends javax.swing.JFrame {
         return total;
     }
     
-    public void exportExcel(ArrayList<BIS> inList) {
+    // Export the bis table to excel file
+    private void exportExcel(ArrayList<BIS> inList) {
         String[] columns = {"DU ID Scope", "Acceptance Plan", "Acceptance Step New Category",
             "Acceptance Step Name", "Subcontractor", "On Air Actual End Date", "BIS Date", "Step Status", 
             "Step Initiated", "Step Submitted", "Step Rejected", "Resubmitted", 
@@ -274,6 +315,99 @@ public class displayInfo extends javax.swing.JFrame {
         }
     }
     
+    private boolean sendEmail(String summaryStr, String subcon, String email) {
+        try{
+            String host ="smtpscn.huawei.com" ;
+            String user = "a80052136";
+            String pass = "HelpB1600693!";
+            // Recipient's email ID
+            String to = "adrianf.wei@huawei.com";
+            // Sender's email ID
+            String from = "adrianf.wei@huawei.com";
+            String subject = "BIS Report Submission Status (" + email + ")";
+            String messageText = summaryStr;
+            boolean sessionDebug = false;
+
+            Properties props = System.getProperties(); // to set different type of properties
+
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", "587");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.trust", "smtpscn.huawei.com");
+
+            java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+            Session mailSession = Session.getDefaultInstance(props, null);
+            mailSession.setDebug(sessionDebug);
+            
+            // Create a default MimeMessage oject
+            Message msg = new MimeMessage(mailSession);
+            
+            // Set From: heder field of the header
+            msg.setFrom(new InternetAddress(from));
+            
+            // Set To: header filed of the header
+            InternetAddress[] address = {new InternetAddress(to)}; // address of sender
+            msg.setRecipients(Message.RecipientType.TO, address); // receiver email
+            
+            // Set Subject: header field
+            msg.setSubject(subject); 
+            msg.setSentDate(new Date()); // message send date
+            
+            // Create the message part
+            BodyPart msgBodyPart = new MimeBodyPart();
+            
+            // Now set the actual message
+            msgBodyPart.setText(messageText);
+            
+            // Create a multipar message
+            Multipart multipart = new MimeMultipart();
+            
+            // Set text message part
+            multipart.addBodyPart(msgBodyPart);
+            
+            // Part two is attachment
+            msgBodyPart = new MimeBodyPart();
+            String filename = "C:\\Users\\a80052136\\Documents\\NetBeansProjects\\sendMessage\\" + 
+                    subcon + ".xlsx";
+            DataSource source = new FileDataSource(filename);
+            msgBodyPart.setDataHandler(new DataHandler(source));
+            msgBodyPart.setFileName(source.getName());
+            //msgBodyPart.setFileName(filename);
+            multipart.addBodyPart(msgBodyPart);
+
+            // Send the complete message parts
+            msg.setContent(multipart);
+                       
+            //msg.setText(messageText); // actual message
+
+           Transport transport=mailSession.getTransport("smtp"); //server through which we are going to send msg
+           transport.connect(host, user, pass); // we need because we have to authenticate sender email and password
+           transport.sendMessage(msg, msg.getAllRecipients());
+           transport.close();
+           System.out.println("message send successfully");
+           return true;
+        }catch(Exception ex)
+        {
+            System.out.println(ex); // if any error occur then error message will print
+        }
+        return false;
+    }
+    
+    private String getSubconEmail(String subconName) {
+        String subconNameTrim = subconName.replaceAll("[^\\p{L}\\p{Nd}]+", "");
+        String emailReturn = null;
+        SubcontractorDA da = new SubcontractorDA();
+        ArrayList<Subcontractor> conList = da.getAllSubcontractor();
+        for (Subcontractor s: conList) {
+            String nameGet = s.getName().replaceAll("[^\\p{L}\\p{Nd}]+", "");
+            if (nameGet.equalsIgnoreCase(subconNameTrim)) {
+                emailReturn = s.getEmail();
+            }
+        }
+        return emailReturn;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -289,25 +423,10 @@ public class displayInfo extends javax.swing.JFrame {
         pendingList = new javax.swing.JList<>();
         jLabel2 = new javax.swing.JLabel();
         sendEmailBtn = new javax.swing.JButton();
+        sendAllBtn = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        fopSubLbl = new javax.swing.JLabel();
-        fopResubLbl = new javax.swing.JLabel();
-        optiSubLbl = new javax.swing.JLabel();
-        optiResubLbl = new javax.swing.JLabel();
-        bstrSubLbl = new javax.swing.JLabel();
-        bstrResubLbl = new javax.swing.JLabel();
-        fmSubLbl = new javax.swing.JLabel();
-        fmResubLbl = new javax.swing.JLabel();
-        prefixSubLbl = new javax.swing.JLabel();
-        prefixResubLbl = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        summaryTable = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         detailsTable = new javax.swing.JTable();
@@ -334,150 +453,89 @@ public class displayInfo extends javax.swing.JFrame {
             }
         });
 
+        sendAllBtn.setText("Send Email To All");
+        sendAllBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendAllBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 605, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 605, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(228, 228, 228)
+                        .addComponent(sendEmailBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sendAllBtn)))
                 .addContainerGap(31, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(sendEmailBtn)
-                .addGap(219, 219, 219))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(30, 30, 30)
                 .addComponent(jLabel2)
-                .addGap(23, 23, 23)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sendEmailBtn)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sendEmailBtn)
+                    .addComponent(sendAllBtn))
+                .addGap(36, 36, 36))
         );
 
         jLabel3.setText("Summary:  ");
 
-        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
+        summaryTable.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        summaryTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
+            },
+            new String [] {
+                "1-FOP", "2-OPTI", "3-BSTR", "4-FM", "5-PREFIX"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
 
-        jLabel9.setText("Pending Submission");
-
-        jLabel10.setText("Pending Resubmission");
-
-        fopSubLbl.setText("0");
-
-        fopResubLbl.setText("0");
-
-        optiSubLbl.setText("0");
-
-        optiResubLbl.setText("0");
-
-        bstrSubLbl.setText("0");
-
-        bstrResubLbl.setText("0");
-
-        fmSubLbl.setText("0");
-
-        fmResubLbl.setText("0");
-
-        prefixSubLbl.setText("0");
-
-        prefixResubLbl.setText("0");
-
-        jLabel4.setText("1-FOP");
-
-        jLabel5.setText("2-OPIT");
-
-        jLabel6.setText("3-BSTR");
-
-        jLabel7.setText("4-FM");
-
-        jLabel8.setText("5-PREFIX");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel10)
-                    .addComponent(jLabel9))
-                .addGap(38, 38, 38)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(fopSubLbl)
-                    .addComponent(fopResubLbl)
-                    .addComponent(jLabel4))
-                .addGap(69, 69, 69)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(optiSubLbl)
-                    .addComponent(optiResubLbl)
-                    .addComponent(jLabel5))
-                .addGap(76, 76, 76)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(bstrSubLbl)
-                    .addComponent(bstrResubLbl)
-                    .addComponent(jLabel6))
-                .addGap(55, 55, 55)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(fmSubLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
-                            .addComponent(fmResubLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(66, 66, 66)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(prefixSubLbl)
-                            .addComponent(prefixResubLbl)))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel7)
-                        .addGap(78, 78, 78)
-                        .addComponent(jLabel8)))
-                .addContainerGap(45, Short.MAX_VALUE))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(30, 30, 30)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel8))
-                .addGap(19, 19, 19)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(optiSubLbl)
-                    .addComponent(fopSubLbl)
-                    .addComponent(jLabel9)
-                    .addComponent(bstrSubLbl)
-                    .addComponent(fmSubLbl)
-                    .addComponent(prefixSubLbl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(optiResubLbl)
-                    .addComponent(fopResubLbl)
-                    .addComponent(jLabel10)
-                    .addComponent(bstrResubLbl)
-                    .addComponent(fmResubLbl)
-                    .addComponent(prefixResubLbl))
-                .addContainerGap(33, Short.MAX_VALUE))
-        );
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        summaryTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        summaryTable.setFillsViewportHeight(true);
+        summaryTable.getTableHeader().setReorderingAllowed(false);
+        jScrollPane3.setViewportView(summaryTable);
+        if (summaryTable.getColumnModel().getColumnCount() > 0) {
+            summaryTable.getColumnModel().getColumn(0).setResizable(false);
+            summaryTable.getColumnModel().getColumn(1).setResizable(false);
+            summaryTable.getColumnModel().getColumn(2).setResizable(false);
+            summaryTable.getColumnModel().getColumn(3).setResizable(false);
+            summaryTable.getColumnModel().getColumn(4).setResizable(false);
+        }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(33, 33, 33)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 867, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -485,12 +543,12 @@ public class displayInfo extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(23, 23, 23)
                 .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(71, Short.MAX_VALUE))
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         detailsTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -519,7 +577,7 @@ public class displayInfo extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1518, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -566,9 +624,9 @@ public class displayInfo extends javax.swing.JFrame {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26))
             .addGroup(layout.createSequentialGroup()
-                .addGap(689, 689, 689)
+                .addGap(704, 704, 704)
                 .addComponent(exportBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(exportAllBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
@@ -580,24 +638,16 @@ public class displayInfo extends javax.swing.JFrame {
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13)
+                .addGap(7, 7, 7)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(exportBtn)
                     .addComponent(exportAllBtn)
-                    .addComponent(jButton1)
-                    .addComponent(exportBtn))
+                    .addComponent(jButton1))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void sendEmailBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendEmailBtnActionPerformed
-        if (pendingList.getSelectedValue() != null) {
-            sendEmail se = new sendEmail(conList, pendingList.getSelectedValue(), 
-            summaryList);
-            se.setVisible(true);
-        } 
-    }//GEN-LAST:event_sendEmailBtnActionPerformed
 
     private void exportBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportBtnActionPerformed
         exportExcel(passList);
@@ -625,40 +675,64 @@ public class displayInfo extends javax.swing.JFrame {
         mp.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void sendEmailBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendEmailBtnActionPerformed
+        if (pendingList.getSelectedValue() != null) {
+            sendEmail se = new sendEmail(pendingList.getSelectedValue());
+            se.setVisible(true);
+        }
+    }//GEN-LAST:event_sendEmailBtnActionPerformed
+
+    private void sendAllBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendAllBtnActionPerformed
+        ArrayList<BIS> bisList;
+        boolean hasSent = false;
+        String sentSubcon = "";
+        String email;
+        for (String subcon: filtered) {
+            bisList = new ArrayList<>();
+            email = getSubconEmail(subcon);
+            for (BIS bis: filteredBisList) {
+                if (bis.getSubcontractor().equalsIgnoreCase(subcon)) {
+                    bisList.add(bis);
+                }
+            }
+            exportExcel(bisList);
+            String summary = getSummaryStr(bisList);
+            if (email != null) {
+                hasSent = sendEmail(summary, subcon, email);
+                if (hasSent) {
+                    sentSubcon += subcon + "\n";
+                }
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "No email found for the contractor - " +
+                        subcon + "\nEmail will not be sent to this contractor.",
+                        "Message", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+        JOptionPane.showMessageDialog(this, "Email has been sent to the following subcontractor: \n" +
+                        sentSubcon,
+                        "Message", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_sendAllBtnActionPerformed
+
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel bstrResubLbl;
-    private javax.swing.JLabel bstrSubLbl;
     private javax.swing.JTable detailsTable;
     private javax.swing.JButton exportAllBtn;
     private javax.swing.JButton exportBtn;
-    private javax.swing.JLabel fmResubLbl;
-    private javax.swing.JLabel fmSubLbl;
-    private javax.swing.JLabel fopResubLbl;
-    private javax.swing.JLabel fopSubLbl;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel optiResubLbl;
-    private javax.swing.JLabel optiSubLbl;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JList<String> pendingList;
-    private javax.swing.JLabel prefixResubLbl;
-    private javax.swing.JLabel prefixSubLbl;
+    private javax.swing.JButton sendAllBtn;
     private javax.swing.JButton sendEmailBtn;
+    private javax.swing.JTable summaryTable;
     // End of variables declaration//GEN-END:variables
 }

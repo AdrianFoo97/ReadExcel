@@ -39,11 +39,11 @@ public class sendEmail extends javax.swing.JFrame {
     private ArrayList<String> summaryList;
     private SubcontractorDA da;
     private String subcon;
+    private ArrayList<Subcontractor> conList;
     /**
      * Creates new form sendEmail
      */
-    public sendEmail(ArrayList<Subcontractor> conList, String subcon, 
-            ArrayList<String> summaryList) {
+    public sendEmail(String subcon) {
         initComponents();
         receiverLbl.setText(subcon);
         this.subcon = subcon;
