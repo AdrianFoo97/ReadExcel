@@ -16,13 +16,14 @@ import javax.swing.JTable;
  *
  * @author a80052136
  */
-public class addEmail extends javax.swing.JFrame {
+public class addEmail extends javax.swing.JDialog {
     protected ArrayList<Subcontractor> conList;
     private Subcontractor theSubcon;
     /**
      * Creates new form addEmail
      */
-    public addEmail(Subcontractor theSubcon) {
+    public addEmail(java.awt.Frame parent, boolean modal, Subcontractor theSubcon) {
+        super(parent, modal);
         initComponents();
         this.theSubcon = theSubcon;
         SubcontractorDA da = new SubcontractorDA();
@@ -62,9 +63,9 @@ public class addEmail extends javax.swing.JFrame {
         subconNameTF = new javax.swing.JTextField();
         emailTF = new javax.swing.JTextField();
         addBtn = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        cancelBtn = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Subcontractor Name: ");
 
@@ -77,10 +78,10 @@ public class addEmail extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("Cancel");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        cancelBtn.setText("Cancel");
+        cancelBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                cancelBtnActionPerformed(evt);
             }
         });
 
@@ -89,19 +90,20 @@ public class addEmail extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(53, 53, 53)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
-                    .addComponent(subconNameTF)
-                    .addComponent(emailTF, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
-                .addContainerGap(61, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(addBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(92, 92, 92))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(53, 53, 53)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1)
+                            .addComponent(subconNameTF, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                            .addComponent(emailTF)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(167, 167, 167)
+                        .addComponent(addBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(83, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -114,11 +116,11 @@ public class addEmail extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(emailTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                .addGap(71, 71, 71)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addBtn)
-                    .addComponent(jButton1))
-                .addGap(30, 30, 30))
+                    .addComponent(cancelBtn))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -127,21 +129,30 @@ public class addEmail extends javax.swing.JFrame {
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
         String name = subconNameTF.getText();
         String email = emailTF.getText();
-        boolean hasExisted = checkEmailExist(email);
+        boolean emailHasExisted = checkEmailExist(email, theSubcon);
+        boolean nameHasExisted = checkNameExist(name, theSubcon);
         SubcontractorDA da = new SubcontractorDA();
+        System.out.println(emailHasExisted);
+        System.out.println(nameHasExisted);
         
         if (theSubcon == null && !name.equals("") && !email.equals("")) {
             ArrayList <Subcontractor> conList = da.getAllSubcontractor();
             if (email.contains("@")) {
-                if (!hasExisted) {
+                if (!emailHasExisted && !nameHasExisted) {
                     Subcontractor con = new Subcontractor(name, email);
                     da.save(con);
                     this.dispose();
-                    MaintainEmail me = new MaintainEmail();
-                    me.setVisible(true);
+                }
+                else if (emailHasExisted && nameHasExisted) {
+                    JOptionPane.showMessageDialog(this, "This name and email is already exist",
+                    "Message", JOptionPane.INFORMATION_MESSAGE);
+                }
+                else if (emailHasExisted) {
+                    JOptionPane.showMessageDialog(this, "This email is already exist",
+                    "Message", JOptionPane.INFORMATION_MESSAGE);
                 }
                 else {
-                    JOptionPane.showMessageDialog(this, "This email is already exist",
+                    JOptionPane.showMessageDialog(this, "This name is already exist",
                     "Message", JOptionPane.INFORMATION_MESSAGE);
                 }
 
@@ -153,16 +164,22 @@ public class addEmail extends javax.swing.JFrame {
             
         }
         else if (theSubcon != null && !name.equals("") && !email.equals("")){
-            if (!hasExisted) {
+            if (!emailHasExisted && !nameHasExisted) {
                 da.setSubcontractor(theSubcon.getEmail(), name, email);
                 this.dispose();
-                MaintainEmail me = new MaintainEmail();
-                me.setVisible(true);
             }
-            else {
+            else if (emailHasExisted && nameHasExisted) {
+                    JOptionPane.showMessageDialog(this, "This name and email is already exist",
+                    "Message", JOptionPane.INFORMATION_MESSAGE);
+                }
+            else if (emailHasExisted) {
                 JOptionPane.showMessageDialog(this, "This email is already exists.",
                             "Message", JOptionPane.INFORMATION_MESSAGE);
-            }     
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "This name is already exists.",
+                            "Message", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
         else {
             JOptionPane.showMessageDialog(this, "Please fill in all the information required.",
@@ -171,26 +188,47 @@ public class addEmail extends javax.swing.JFrame {
     }//GEN-LAST:event_addBtnActionPerformed
     
     // check whether the email exist
-    private boolean checkEmailExist(String email) {
+    private boolean checkEmailExist(String email, Subcontractor theSubcon) {
         boolean hasExisted = false;
         for (Subcontractor s: conList) {
                 if (s.getEmail().equals(email)) {
                     hasExisted = true;
                 }
             }
+        if (theSubcon != null && theSubcon.getEmail().equalsIgnoreCase(email)) {
+            hasExisted = false;
+        }
         return hasExisted;
     }
     
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    // check whether the email exist
+    private boolean checkNameExist(String name, Subcontractor theSubcon) {
+        boolean hasExisted = false;
+        
+        name = name.replaceAll("[^\\p{L}\\p{Nd}]+", "");
+        for (Subcontractor s: conList) {
+            String nameGet = s.getName().replaceAll("[^\\p{L}\\p{Nd}]+", "");
+                if (nameGet.equalsIgnoreCase(name)) {
+                    hasExisted = true;
+                }
+            }
+        if (theSubcon != null) {
+            String nameTrim = theSubcon.getName().replaceAll("[^\\p{L}\\p{Nd}]+", "");
+            if (name.equalsIgnoreCase(nameTrim)) {
+                hasExisted = false;
+            }
+        }
+        return hasExisted;
+    }
+    
+    private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBtnActionPerformed
         this.dispose();
-        MaintainEmail me = new MaintainEmail();
-        me.setVisible(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_cancelBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
+    private javax.swing.JButton cancelBtn;
     private javax.swing.JTextField emailTF;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField subconNameTF;

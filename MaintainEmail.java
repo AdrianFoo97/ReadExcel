@@ -85,7 +85,7 @@ public class MaintainEmail extends javax.swing.JFrame {
 
         jLabel1.setText("Subcontractor Details");
 
-        closeBtn.setText("Close");
+        closeBtn.setText("Back");
         closeBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeBtnActionPerformed(evt);
@@ -139,8 +139,7 @@ public class MaintainEmail extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-       addEmail ae = new addEmail(null);
-       this.dispose();
+       addEmail ae = new addEmail(this, true, null);
        ae.setVisible(true);
     }//GEN-LAST:event_addBtnActionPerformed
 
@@ -153,9 +152,8 @@ public class MaintainEmail extends javax.swing.JFrame {
     private void editBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
         try {
             Subcontractor subcon = etm.getSubconAt(subconTable.getSelectedRow());
-            addEmail ae = new addEmail(subcon);
-            ae.setVisible(true);
-            this.dispose();            
+            addEmail ae = new addEmail(this, true, subcon);
+            ae.setVisible(true);          
         }
         catch (java.lang.ArrayIndexOutOfBoundsException e) {
             JOptionPane.showMessageDialog(this, "Please select a subcontractor to edit.",

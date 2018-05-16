@@ -150,7 +150,7 @@ public class Import extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Please choose an excel file"
                     + "(.xlxs) to import.",
                             "Message", JOptionPane.INFORMATION_MESSAGE);
-        } catch (org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Please choose an excel file"
                     + "(.xlxs) to import.",
                             "Message", JOptionPane.INFORMATION_MESSAGE);
