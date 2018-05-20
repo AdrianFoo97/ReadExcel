@@ -12,12 +12,13 @@ public class BIS {
     protected String idScope, acceptancePlan, category, stepName, subcontractor;
     protected String onADate, bisDate, stepStatus, stepInitiated, stepSubmitted;
     protected String rejected, resubmitted, stepAccepted;
+    protected String site;
     
     public BIS (String idScope, String acceptancePlan, String category, 
             String stepName, String subcontractor, String onADate, 
             String bisDate, String stepStatus, String stepInitiated, 
             String stepSubmitted, String rejected, String resubmitted, 
-            String stepAccepted) {
+            String stepAccepted, String site) {
         
         this.idScope = idScope;
         this.acceptancePlan = acceptancePlan;
@@ -32,6 +33,7 @@ public class BIS {
         this.rejected = rejected;
         this.resubmitted = resubmitted;
         this.stepAccepted = stepAccepted;
+        this.site = site;
     }
 
     public String getIdScope() {
@@ -84,6 +86,14 @@ public class BIS {
 
     public String getStepAccepted() {
         return stepAccepted;
+    }
+
+    public String getSite() {
+        return site;
+    }
+
+    public void setSite(String site) {
+        this.site = site;
     }
 
     public void setIdScope(String idScope) {

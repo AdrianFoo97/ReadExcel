@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 import javax.activation.DataHandler;
@@ -13,22 +14,27 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author a80052136
  */
 public class SendEmail {
-    public static boolean sendEmail(String summaryStr, String subcon, String email) {
+    public static String sendEmail(String summaryStr, String subcon, 
+            ArrayList<String> subconEmail, String senderEmail, String password, 
+            String username) {
         try{
             String host ="smtpscn.huawei.com" ;
-            String user = "a80052136";
-            String pass = "HelpB1600693!";
+            String user = username;
+            String pass = password;
             // Recipient's email ID
-            String to = email;
+            ArrayList<String> to = subconEmail;
             // Sender's email ID
-            String from = "adrianf.wei@huawei.com";
-            String subject = "BIS Report Submission Status (" + email + ")";
+            String from = senderEmail;
+            // cc's email ID
+            String cc = senderEmail;
+            String subject = "BIS Report Submission Status";
             String messageText = summaryStr;
             boolean sessionDebug = false;
 
@@ -52,8 +58,13 @@ public class SendEmail {
             msg.setFrom(new InternetAddress(from));
             
             // Set To: header filed of the header
-            InternetAddress[] address = {new InternetAddress(to)}; // address of sender
+            InternetAddress[] address = new InternetAddress[to.size()]; // address of sender
+            for (int i = 0; i < to.size(); i++) {
+                address[i] = new InternetAddress(to.get(i));
+            }
             msg.setRecipients(Message.RecipientType.TO, address); // receiver email
+            InternetAddress[] address2 = {new InternetAddress(cc)}; // address of sender
+            msg.setRecipients(Message.RecipientType.CC, address2); // receiver email
             
             // Set Subject: header field
             msg.setSubject(subject); 
@@ -73,7 +84,7 @@ public class SendEmail {
             
             // Part two is attachment
             msgBodyPart = new MimeBodyPart();
-            String filename = "C:\\Users\\a80052136\\Documents\\NetBeansProjects\\sendMessage\\" + 
+            String filename = System.getProperty("user.dir") + "\\" + 
                     subcon + ".xlsx";
             DataSource source = new FileDataSource(filename);
             msgBodyPart.setDataHandler(new DataHandler(source));
@@ -85,17 +96,23 @@ public class SendEmail {
             msg.setContent(multipart);
                        
             //msg.setText(messageText); // actual message
+            
+            System.out.println(msg.getAllRecipients());
 
            Transport transport=mailSession.getTransport("smtp"); //server through which we are going to send msg
            transport.connect(host, user, pass); // we need because we have to authenticate sender email and password
            transport.sendMessage(msg, msg.getAllRecipients());
            transport.close();
            System.out.println("message send successfully");
-           return true;
-        }catch(Exception ex)
+           return "successful";
+        }
+        catch(javax.mail.AuthenticationFailedException e) {
+            return "failed";
+        }
+        catch(Exception ex)
         {
             System.out.println(ex); // if any error occur then error message will print
         }
-        return false;
+        return "unsuccessful";
     } 
 }

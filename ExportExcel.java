@@ -29,7 +29,7 @@ public class ExportExcel {
     // Export the bis table to excel file
     public static boolean export(ArrayList<BIS> inList) {
         String[] columns = {"DU ID Scope", "Acceptance Plan", "Acceptance Step New Category",
-            "Acceptance Step Name", "Subcontractor", "On Air Actual End Date", "BIS Date", "Step Status", 
+            "Acceptance Step Name", "Subcontractor", "Sites Label","On Air Actual End Date", "BIS Date", "Step Status", 
             "Step Initiated", "Step Submitted", "Step Rejected", "Resubmitted", 
             "Step Accepted"};
         
@@ -78,14 +78,15 @@ public class ExportExcel {
             row.createCell(2).setCellValue(bis.getCategory());
             row.createCell(3).setCellValue(bis.getStepName());
             row.createCell(4).setCellValue(bis.getSubcontractor());
-            row.createCell(5).setCellValue(bis.getOnADate());
-            row.createCell(6).setCellValue(bis.getBisDate());
-            row.createCell(7).setCellValue(bis.getStepStatus());
-            row.createCell(8).setCellValue(bis.getStepInitiated());
-            row.createCell(9).setCellValue(bis.getStepSubmitted());
-            row.createCell(10).setCellValue(bis.getRejected());
-            row.createCell(11).setCellValue(bis.getResubmitted());
-            row.createCell(12).setCellValue(bis.getStepAccepted());
+            row.createCell(5).setCellValue(bis.getSite());
+            row.createCell(6).setCellValue(bis.getOnADate());
+            row.createCell(7).setCellValue(bis.getBisDate());
+            row.createCell(8).setCellValue(bis.getStepStatus());
+            row.createCell(9).setCellValue(bis.getStepInitiated());
+            row.createCell(10).setCellValue(bis.getStepSubmitted());
+            row.createCell(11).setCellValue(bis.getRejected());
+            row.createCell(12).setCellValue(bis.getResubmitted());
+            row.createCell(13).setCellValue(bis.getStepAccepted());
             
             subcon = bis.getSubcontractor();
         }

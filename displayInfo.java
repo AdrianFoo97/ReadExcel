@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
@@ -53,7 +54,7 @@ public class displayInfo extends javax.swing.JFrame {
         String data[][] = getSummaryTable(passList);
         DefaultTableModel model = new DefaultTableModel(data, column);
         summaryTable.setModel(model);
-        summaryTable.setRowHeight(90);
+        summaryTable.setRowHeight(93);
         summaryTable.setFillsViewportHeight(true);
         summaryTable.setRowSelectionAllowed(false);
         summaryTable.getColumnModel().getColumn(0).setPreferredWidth(150);
@@ -80,8 +81,10 @@ public class displayInfo extends javax.swing.JFrame {
         listModel = new DefaultListModel();
         pendingList.setModel(listModel);
         pendingList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        ArrayList<String> pendSubconList = new ArrayList<>(filtered);
+        Collections.sort(pendSubconList);
         // adding pending subcontractor into the list 
-        for (String str: filtered) {
+        for (String str: pendSubconList) {
             listModel.addElement(str);
         }
         // adding listener to pending list

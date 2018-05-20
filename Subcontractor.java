@@ -8,12 +8,12 @@
  *
  * @author a80052136
  */
-public class Subcontractor {
+public class Subcontractor implements Comparable{
     protected String name;
     protected String email;
 
     public Subcontractor(String name, String email) {
-        this.name = name;
+        this.name = name.toUpperCase();
         this.email = email;
     }
 
@@ -36,6 +36,11 @@ public class Subcontractor {
     @Override
     public String toString() {
         return "Subcontractor{" + "name=" + name + ", email=" + email + '}';
+    }
+
+    @Override
+    public int compareTo(Object t) {
+        return this.getName().compareTo(((Subcontractor) t).getName());
     }
     
     

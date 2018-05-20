@@ -9,11 +9,10 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JList;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -30,6 +29,7 @@ public class chooseSub extends javax.swing.JDialog {
     private DefaultListModel subconListModel;
     private DefaultListModel selectedListModel;
     private ArrayList<BIS> filteredBisList;
+    private ArrayList<Sender> senderList;
 
     /**
      * Creates new form chooseSub
@@ -40,6 +40,8 @@ public class chooseSub extends javax.swing.JDialog {
         initComponents();
         this.conList = new ArrayList<>(conList);
         this.filteredBisList = bisList;
+        SenderDA da = new SenderDA();
+        senderList = da.getAllSender();
         setupListModel();
         setupListModel2();
         centreWindow(this);
@@ -83,15 +85,15 @@ public class chooseSub extends javax.swing.JDialog {
         });
     }
     
-    private String getSubconEmail(String subconName) {
+    private ArrayList<String> getSubconEmail(String subconName) {
         String subconNameTrim = subconName.replaceAll("[^\\p{L}\\p{Nd}]+", "");
-        String emailReturn = null;
+        ArrayList<String> emailReturn = new ArrayList<>();
         SubcontractorDA da = new SubcontractorDA();
         ArrayList<Subcontractor> conList = da.getAllSubcontractor();
         for (Subcontractor s: conList) {
             String nameGet = s.getName().replaceAll("[^\\p{L}\\p{Nd}]+", "");
             if (nameGet.equalsIgnoreCase(subconNameTrim)) {
-                emailReturn = s.getEmail();
+                emailReturn.add(s.getEmail());
             }
         }
         return emailReturn;
@@ -106,7 +108,13 @@ public class chooseSub extends javax.swing.JDialog {
         ArrayList<BIS> bisList = new ArrayList<>(); 
         for (BIS bis: filteredBisList) {
                 if (bis.getSubcontractor().equalsIgnoreCase(subcon)) {
-                    bisList.add(bis);
+                    if (bis.getStepSubmitted().equalsIgnoreCase("null")) {
+                        bisList.add(bis);
+                    }
+                    else if (!bis.getRejected().equalsIgnoreCase("null") &&
+                            bis.getResubmitted().equalsIgnoreCase("null")) {
+                        bisList.add(bis);
+                    }
                 }
             }
         return bisList;
@@ -145,6 +153,23 @@ public class chooseSub extends javax.swing.JDialog {
         for (String theSubcon: unsortedList) {
             subconListModel.addElement(theSubcon);
         }
+    }
+    
+    private ArrayList<String> getAllSenderEmail() {
+        ArrayList<String> emailList = new ArrayList<>();
+        for (Sender s: senderList) {
+            emailList.add(s.getEmail());
+        }
+        return emailList;
+    }
+    
+    private Sender getSender(String email) {
+        for (Sender s: senderList) {
+            if (s.getEmail().equals(email)) {
+                return s;
+            }
+        }
+        return null;
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -337,37 +362,63 @@ public class chooseSub extends javax.swing.JDialog {
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
         ArrayList<String> selectedSubcon = getSelectedSubcon();
+        ArrayList<String> emailList = getAllSenderEmail();
         // Sending email
-        boolean hasSent = false;
+        String hasSent;
         String sentSubcon = "";
-        String email;
-        for (String subcon: selectedSubcon) {
-            email = getSubconEmail(subcon);
-            ArrayList<BIS> bisList = getSubconBisList(subcon);
-            ExportExcel.export(bisList);    // Export to excel file 
-            String summary = Summary.getSummaryStr(bisList);    // Get the summary 
-            if (email != null) {
-                hasSent = SendEmail.sendEmail(summary, subcon, email);
-                if (hasSent) {
-                    sentSubcon += subcon + "\n";
+        ArrayList<String> subconEmail;
+        if (selectedSubcon.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No subcontractor is selected.",
+                        "Message", JOptionPane.INFORMATION_MESSAGE);
+        }
+        else {
+            String senderEmail = (String) JOptionPane.showInputDialog(this, "Please choose the sender email", "Sender Email", 
+                JOptionPane.QUESTION_MESSAGE, null, emailList.toArray(new String[emailList.size()]), "");
+            Sender theSender = getSender(senderEmail);
+            for (String subcon: selectedSubcon) {
+                subconEmail = getSubconEmail(subcon);
+                ArrayList<BIS> bisList = getSubconBisList(subcon);
+                ExportExcel.export(bisList);    // Export to excel file 
+                String summary = Summary.getSummaryStr(bisList);    // Get the summary 
+                if (subconEmail != null) {
+                    hasSent = SendEmail.sendEmail(summary, subcon, subconEmail, theSender.getEmail(), 
+                            theSender.getPassword(), theSender.getUsername());
+                    if (hasSent.equalsIgnoreCase("successful")) {
+                        sentSubcon += subcon + "\n";
+                    }
+                    else if (hasSent.equalsIgnoreCase("failed")) {
+                        JOptionPane.showMessageDialog(this, "Please check again your username, "
+                                + "email or password.",
+                            "Message", JOptionPane.INFORMATION_MESSAGE);
+                        break;
+                    }
+                }
+                else {
+                    JOptionPane.showMessageDialog(this, "No email found for " +
+                            subcon + "\nEmail will not be sent to this subcontractor.",
+                            "Message", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
-            else {
-                JOptionPane.showMessageDialog(this, "No email found for " +
-                        subcon + "\nEmail will not be sent to this subcontractor.",
-                        "Message", JOptionPane.INFORMATION_MESSAGE);
-            }
         }
-        JOptionPane.showMessageDialog(this, "Email has been sent to the following subcontractor: \n\n" +
+        
+        if (!sentSubcon.equalsIgnoreCase("")) {
+            JOptionPane.showMessageDialog(this, "Email has been sent to the following subcontractor: \n\n" +
                         sentSubcon,
                         "Message", JOptionPane.INFORMATION_MESSAGE);
+        }
+        
     }//GEN-LAST:event_sendBtnActionPerformed
 
     private void exportBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportBtnActionPerformed
+        boolean hasExported = false;
         ArrayList<String> selectedSubcon = getSelectedSubcon();
         for (String subcon: selectedSubcon) {
             ArrayList<BIS> bisList = getSubconBisList(subcon);
-            ExportExcel.export(bisList);
+            hasExported = ExportExcel.export(bisList);
+        }
+        if (hasExported) {
+            JOptionPane.showMessageDialog(this, "Exported successfully.",
+                        "Message", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_exportBtnActionPerformed
 

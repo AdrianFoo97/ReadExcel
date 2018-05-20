@@ -16,14 +16,13 @@ import javax.swing.JTable;
  *
  * @author a80052136
  */
-public class addEmail extends javax.swing.JDialog {
+public class addEmail extends javax.swing.JFrame {
     protected ArrayList<Subcontractor> conList;
     private Subcontractor theSubcon;
     /**
      * Creates new form addEmail
      */
-    public addEmail(java.awt.Frame parent, boolean modal, Subcontractor theSubcon) {
-        super(parent, modal);
+    public addEmail(Subcontractor theSubcon) {
         initComponents();
         this.theSubcon = theSubcon;
         SubcontractorDA da = new SubcontractorDA();
@@ -103,7 +102,7 @@ public class addEmail extends javax.swing.JDialog {
                         .addComponent(addBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(83, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -116,7 +115,7 @@ public class addEmail extends javax.swing.JDialog {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(emailTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(71, 71, 71)
+                .addGap(43, 43, 43)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addBtn)
                     .addComponent(cancelBtn))
@@ -130,29 +129,20 @@ public class addEmail extends javax.swing.JDialog {
         String name = subconNameTF.getText();
         String email = emailTF.getText();
         boolean emailHasExisted = checkEmailExist(email, theSubcon);
-        boolean nameHasExisted = checkNameExist(name, theSubcon);
         SubcontractorDA da = new SubcontractorDA();
-        System.out.println(emailHasExisted);
-        System.out.println(nameHasExisted);
         
         if (theSubcon == null && !name.equals("") && !email.equals("")) {
             ArrayList <Subcontractor> conList = da.getAllSubcontractor();
             if (email.contains("@")) {
-                if (!emailHasExisted && !nameHasExisted) {
+                if (!emailHasExisted) {
                     Subcontractor con = new Subcontractor(name, email);
                     da.save(con);
                     this.dispose();
-                }
-                else if (emailHasExisted && nameHasExisted) {
-                    JOptionPane.showMessageDialog(this, "This name and email is already exist",
-                    "Message", JOptionPane.INFORMATION_MESSAGE);
-                }
-                else if (emailHasExisted) {
-                    JOptionPane.showMessageDialog(this, "This email is already exist",
-                    "Message", JOptionPane.INFORMATION_MESSAGE);
+                    MaintainEmail me = new MaintainEmail();
+                    me.setVisible(true);
                 }
                 else {
-                    JOptionPane.showMessageDialog(this, "This name is already exist",
+                    JOptionPane.showMessageDialog(this, "This email is already exist",
                     "Message", JOptionPane.INFORMATION_MESSAGE);
                 }
 
@@ -164,20 +154,14 @@ public class addEmail extends javax.swing.JDialog {
             
         }
         else if (theSubcon != null && !name.equals("") && !email.equals("")){
-            if (!emailHasExisted && !nameHasExisted) {
-                da.setSubcontractor(theSubcon.getEmail(), name, email);
+            if (!emailHasExisted) {
+                da.setSubcontractor(theSubcon.getEmail(), theSubcon.getName(), email, name);
                 this.dispose();
+                MaintainEmail me = new MaintainEmail();
+                me.setVisible(true);
             }
-            else if (emailHasExisted && nameHasExisted) {
-                    JOptionPane.showMessageDialog(this, "This name and email is already exist",
-                    "Message", JOptionPane.INFORMATION_MESSAGE);
-                }
             else if (emailHasExisted) {
                 JOptionPane.showMessageDialog(this, "This email is already exists.",
-                            "Message", JOptionPane.INFORMATION_MESSAGE);
-            }
-            else {
-                JOptionPane.showMessageDialog(this, "This name is already exists.",
                             "Message", JOptionPane.INFORMATION_MESSAGE);
             }
         }
@@ -201,28 +185,10 @@ public class addEmail extends javax.swing.JDialog {
         return hasExisted;
     }
     
-    // check whether the email exist
-    private boolean checkNameExist(String name, Subcontractor theSubcon) {
-        boolean hasExisted = false;
-        
-        name = name.replaceAll("[^\\p{L}\\p{Nd}]+", "");
-        for (Subcontractor s: conList) {
-            String nameGet = s.getName().replaceAll("[^\\p{L}\\p{Nd}]+", "");
-                if (nameGet.equalsIgnoreCase(name)) {
-                    hasExisted = true;
-                }
-            }
-        if (theSubcon != null) {
-            String nameTrim = theSubcon.getName().replaceAll("[^\\p{L}\\p{Nd}]+", "");
-            if (name.equalsIgnoreCase(nameTrim)) {
-                hasExisted = false;
-            }
-        }
-        return hasExisted;
-    }
-    
     private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBtnActionPerformed
         this.dispose();
+        MaintainEmail me = new MaintainEmail();
+        me.setVisible(true);
     }//GEN-LAST:event_cancelBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

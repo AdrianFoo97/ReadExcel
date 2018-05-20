@@ -16,7 +16,7 @@ public class detailsTableModel extends AbstractTableModel{
     // set up the column headers
     private static final String[] colHeader = {
         "DU ID Scope", "Acceptance Plan", "Acceptance Step New Category", "Acceptance Step Name", 
-        "Subcontractor", "On Air Actual End Date", "BIS Date", "Step Status", 
+        "Subcontractor", "Sites Label","On Air Actual End Date", "BIS Date", "Step Status", 
         "Step Initiated", "Step Submitted", "Step Rejected", "Resubmitted", "Step Accepted"
     };
     private ArrayList<BIS> passList;
@@ -49,14 +49,15 @@ public class detailsTableModel extends AbstractTableModel{
             case 2: return theBis.getCategory();
             case 3: return theBis.getStepName();
             case 4: return theBis.getSubcontractor();
-            case 5: return theBis.getOnADate();
-            case 6: return theBis.getBisDate();
-            case 7: return theBis.getStepStatus();
-            case 8: return theBis.getStepInitiated();
-            case 9: return theBis.getStepSubmitted();
-            case 10: return theBis.getRejected();
-            case 11: return theBis.getResubmitted();
-            case 12: return theBis.getStepAccepted();  
+            case 5: return theBis.getSite();
+            case 6: return theBis.getOnADate();
+            case 7: return theBis.getBisDate();
+            case 8: return theBis.getStepStatus();
+            case 9: return theBis.getStepInitiated();
+            case 10: return theBis.getStepSubmitted();
+            case 11: return theBis.getRejected();
+            case 12: return theBis.getResubmitted();
+            case 13: return theBis.getStepAccepted();  
             default: return "";
         }
     }

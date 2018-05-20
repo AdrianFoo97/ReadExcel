@@ -8,10 +8,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -186,9 +183,10 @@ public class Import extends javax.swing.JFrame {
             String onADate = null, bisDate = null, stepStatus = null;
             String stepInitiated = null, stepSubmitted = null;
             String rejected = null, resubmitted = null, stepAccepted = null;
+            String site = null;
             
             //loop through the cells in the row
-            for (int cn=0; cn<=13; cn++) {
+            for (int cn=0; cn<=14; cn++) {
                 Cell cell = row.getCell(cn);
                 
                 //set default cell value if no value is found 
@@ -210,37 +208,40 @@ public class Import extends javax.swing.JFrame {
                     stepName = cell.toString();
                 }
                 else if (cn==4) {
-                    subcontractor = cell.toString();
+                    subcontractor = cell.toString().toUpperCase();
                 }
                 else if (cn==5) {
-                    onADate = cell.toString();
+                    site = cell.toString();
                 }
                 else if (cn==6) {
-                    bisDate = cell.toString();
+                    onADate = cell.toString();
                 }
                 else if (cn==7) {
-                    stepStatus = cell.toString();
+                    bisDate = cell.toString();
                 }
                 else if (cn==8) {
-                    stepInitiated = cell.toString();
+                    stepStatus = cell.toString();
                 }
                 else if (cn==9) {
-                    stepSubmitted = cell.toString();
+                    stepInitiated = cell.toString();
                 }
                 else if (cn==10) {
-                    rejected = cell.toString();
+                    stepSubmitted = cell.toString();
                 }
                 else if (cn==11) {
-                    resubmitted = cell.toString();
+                    rejected = cell.toString();
                 }
                 else if (cn==12) {
+                    resubmitted = cell.toString();
+                }
+                else if (cn==13) {
                     stepAccepted = cell.toString();
                 }   
             }
             
             BIS bis = new BIS(idScope, acceptancePlan, category, stepName, subcontractor,
             onADate, bisDate, stepStatus, stepInitiated, stepSubmitted,
-            rejected, resubmitted, stepAccepted);
+            rejected, resubmitted, stepAccepted, site);
             bisList.add(bis);
 
         }

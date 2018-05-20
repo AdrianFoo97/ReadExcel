@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
@@ -18,7 +19,7 @@ import javax.swing.ListSelectionModel;
  * @author a80052136
  */
 public class MaintainEmail extends javax.swing.JFrame {
-    protected ArrayList<Subcontractor> conList;
+    private ArrayList<Subcontractor> conList;
     private emailTableModel etm;
     /**
      * Creates new form MaintainEmail
@@ -60,6 +61,7 @@ public class MaintainEmail extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         closeBtn = new javax.swing.JButton();
         editBtn = new javax.swing.JButton();
+        deleteBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -99,6 +101,13 @@ public class MaintainEmail extends javax.swing.JFrame {
             }
         });
 
+        deleteBtn.setText("Delete");
+        deleteBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -112,10 +121,12 @@ public class MaintainEmail extends javax.swing.JFrame {
                         .addGap(244, 244, 244)
                         .addComponent(jLabel1))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(203, 203, 203)
+                        .addGap(160, 160, 160)
                         .addComponent(addBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(editBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(closeBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(58, Short.MAX_VALUE))
@@ -131,7 +142,8 @@ public class MaintainEmail extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addBtn)
                     .addComponent(closeBtn)
-                    .addComponent(editBtn))
+                    .addComponent(editBtn)
+                    .addComponent(deleteBtn))
                 .addContainerGap())
         );
 
@@ -139,8 +151,9 @@ public class MaintainEmail extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-       addEmail ae = new addEmail(this, true, null);
+       addEmail ae = new addEmail(null);
        ae.setVisible(true);
+       this.dispose();
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void closeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeBtnActionPerformed
@@ -152,8 +165,9 @@ public class MaintainEmail extends javax.swing.JFrame {
     private void editBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
         try {
             Subcontractor subcon = etm.getSubconAt(subconTable.getSelectedRow());
-            addEmail ae = new addEmail(this, true, subcon);
-            ae.setVisible(true);          
+            addEmail ae = new addEmail(subcon);
+            ae.setVisible(true);     
+            this.dispose();
         }
         catch (java.lang.ArrayIndexOutOfBoundsException e) {
             JOptionPane.showMessageDialog(this, "Please select a subcontractor to edit.",
@@ -161,10 +175,24 @@ public class MaintainEmail extends javax.swing.JFrame {
         };
     }//GEN-LAST:event_editBtnActionPerformed
 
+    private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
+        try {
+            Subcontractor subcon = etm.getSubconAt(subconTable.getSelectedRow());
+            SubcontractorDA da = new SubcontractorDA();
+            da.remove(subcon.getName(), subcon.getEmail());
+            setTableModel();
+        }
+        catch (java.lang.ArrayIndexOutOfBoundsException e) {
+            JOptionPane.showMessageDialog(this, "Please select a subcontractor to delete.",
+                        "Message", JOptionPane.INFORMATION_MESSAGE);
+        };
+    }//GEN-LAST:event_deleteBtnActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
     private javax.swing.JButton closeBtn;
+    private javax.swing.JButton deleteBtn;
     private javax.swing.JButton editBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
